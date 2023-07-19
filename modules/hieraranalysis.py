@@ -1,7 +1,7 @@
-# Standard libs ----
+# Python libs ----
 import numpy as np
 import pandas as pd
-#  Personal libs ----
+#  ELK libraries ----
 from various.network_tools import *
 from modules.simanalysis import Sim
 from modules.colregion import colregion
@@ -11,21 +11,17 @@ from h_entropy import h_entropy as HE
 
 class Hierarchy(Sim):
   def __init__(
-    self, G, A, R, nodes, linkage, mode, lookup=0, undirected=False
+    self, R, nodes, linkage, mode, topology="MIX", index="S1_2", cut=False, lookup=0, undirected=False, **kwargs
   ):
     # Initialize Sim ---
     super().__init__(
-      nodes, A, R, mode,
-      topology=G.topology, index=G.index,
+      nodes, R, mode,
+      topology=topology, index=index,
       lookup=lookup, undirected=undirected
     )
     # Set parameters
     self.linkage = linkage
-    self.cut = G.cut
-    self.pickle_path = G.pickle_path
-    self.plot_path = G.plot_path
-    self.subfolder = G.subfolder
-    self.analysis = G.analysis
+    self.cut = cut
     # Compute similarity matrix ----
     self.similarity_by_feature_cpp()
     # Compute distance matrix ----
@@ -58,14 +54,6 @@ class Hierarchy(Sim):
           "weight" : list(R[non_x, non_y]) * 2
         }
       )
-    
-    # Overlaps ----
-    self.overlap = pd.DataFrame()
-    # Cover ---
-    self.cover = {}
-    # KR ----
-    self.kr = pd.DataFrame()
-    # Entropy ----
     self.entropy = []
 
   def delete_linksim_matrix(self):
@@ -74,19 +62,8 @@ class Hierarchy(Sim):
   def delete_dist_matrix(self):
     self.dist_mat = 0
 
-  def set_kr(self, k, r, score=""):
-    self.kr = pd.concat(
-      [
-        self.kr,
-        pd.DataFrame(
-          {
-            "K" : [k],
-            "R" : [r],
-            "score" : [score]
-          }
-        )
-      ], ignore_index=True
-    )
+  def set_entropy(self, entropies):
+    self.entropy = entropies
 
   def get_hierarchy(self):
     print("Compute link hierarchical agglomeration ----")
@@ -164,7 +141,6 @@ class Hierarchy(Sim):
       ]
     )
     return result
-  
   
   def compute_H_features_cpp(self):
     print("\t> Compute features")
@@ -260,7 +236,6 @@ class Hierarchy(Sim):
     sh = np.nansum(self.link_entropy_H[0, :])
     sv = np.nansum(self.link_entropy_H[1, :])
     print(f"\n\tlink entropy H: Sh : {sh:.4f}, and Sv : {sv:.4f}\n")
-
   
   def node_entropy_cpp(self, dist : str, cut=False):
     # from scipy.cluster.hierarchy import cut_tree
@@ -285,7 +260,6 @@ class Hierarchy(Sim):
     sv = np.nansum(self.node_entropy_H[1, :])
     print(f"\n\tNode entropy H: Sh : {sh:.4f}, and Sv : {sv:.4f}\n")
 
-
   def la_abre_a_merde_cpp(self, sp=25):
     print("\t> Compute the node hierarchy ----")
     # Get network dataframe ----
@@ -298,22 +272,6 @@ class Hierarchy(Sim):
     else:
       linkage = -1
       raise ValueError("Link community model has not been tested with the input linkage.")
-    # print(self.FH)
-    # Run la_abre_a_merde_vite ----
-    # if self.FH.K.iloc[-1] != 1:
-    #   self.FH = pd.concat(
-    #     [
-    #       self.FH,
-    #       pd.DataFrame(
-    #         {
-    #           "K" : 1,
-    #           "height" : [self.FH.height.iloc[-1] * 1.01],
-    #           "NEC" : [1]
-    #         }
-    #       )
-    #     ],
-    #     ignore_index=True
-    #   )
     NH = noeud_arbre(
       self.dist_mat,
       dA["source"].to_numpy(),
@@ -367,21 +325,6 @@ class Hierarchy(Sim):
 
   def set_colregion(self, colregion : colregion):
     self.colregion = colregion
-
-  def set_overlap_labels(self, labels, score):
-    subdata = pd.DataFrame(
-      {
-        "labels": labels,
-        "score" : [score] * len(labels)
-      }
-    )
-    self.overlap = pd.concat(
-      [self.overlap, subdata],
-      ignore_index=True
-    )
-  
-  def set_cover(self, cover, score):
-    self.cover[score] = cover
 
   def cover_assignment(self, K : int, Cr, labels, undirected=False, **kwargs):  
     from itertools import combinations

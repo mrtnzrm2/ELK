@@ -2,14 +2,10 @@ import pandas as pd
 from matplotlib.colors import to_hex
 
 class colregion:
-  def __init__(self, NET, labels) -> None:
+  def __init__(self, NET) -> None:
     # Define attributes ----
     self.nodes = NET.nodes
-    if len(labels) == NET.nodes:
-      self.labels = labels.astype(str)
-    else:
-      raise ValueError("Number of labels different than number of nodes.")
-    self.get_regions()
+    self.labels = NET.labels
 
   def get_regions(self, add_colregion = (False, False)):
     if not add_colregion[0]:

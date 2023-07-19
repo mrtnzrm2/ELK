@@ -21,15 +21,14 @@ class Plot_N:
     self.A = H.A
     self.dA = H.dA
     self.FH = H.FH
-    self.R = H.R
     self.index = H.index
     self.H = H.H
 
-  def histogram_R(self, R, label="", on=True):
+  def histogramX(self, A, label="", on=True):
     if on:
       print("Plot weight histogram!!!")
       # Transform FLN to DataFrame ----
-      dA = adj2df(R)
+      dA = adj2df(A)
       dA["connection"] = "exist"
       dA.connection.loc[dA.weight == 0] = "~exist"
       # Transform FLN to weights ----
@@ -42,10 +41,7 @@ class Plot_N:
         stat="density",
         ax=ax
       )
-
-      ax.set_ylabel("R")
       fig.tight_layout()
-
       # Arrange path ----
       plot_path = os.path.join(
         self.path,"Features"

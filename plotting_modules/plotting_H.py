@@ -14,7 +14,7 @@ class Plot_H:
   def __init__(self, plot_path, H : Hierarchy) -> None:
     ## Attributes ----
     self.linkage = H.linkage
-    self.BH = H.BH
+    self.BH = H.FH
     self.Z = H.Z
     self.H = H.H
     self.A = H.A
@@ -25,7 +25,6 @@ class Plot_H:
     self.leaves = H.leaves
     self.index = H.index
     self.entropy = H.entropy
-    self.R = H.R
 
     # Net ----
     self.path = plot_path

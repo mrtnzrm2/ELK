@@ -11,7 +11,7 @@ class Plot_N:
   def __init__(self) -> None:
     pass
 
-  def histogramX(self, X, width=8, height=6):
+  def histogramX(self, X, width=8, height=6, labelx=""):
     dA = adj2df(X)
     dA = dA.loc[dA.weight != 0]
     fig , ax = plt.subplots(1, 1, figsize=(width, height))
@@ -21,9 +21,9 @@ class Plot_N:
       stat="density",
       ax=ax
     )
-    fig.tight_layout()
+    if labelx != "": ax.set_xlabel(labelx)
   
-  def regXY(self, X, Y, s=1, lowess=False, width=8, height=6):
+  def regXY(self, X, Y, s=1, lowess=False, title="", labelx="", labely="", width=8, height=6):
     # Get data ----
     dY = adj2df(Y.copy())
     dX = adj2df(X.copy())
@@ -60,6 +60,9 @@ class Plot_N:
       line_kws={"color" : "orange"},
       ax=ax
     )
+    if labelx != "": ax.set_xlabel(labelx)
+    if labely != "": ax.set_ylabel(labely)
+    if title != "": ax.set_title(title)
 
   def scatterXY(self, X, Y, s=1, width=8, height=7):
     # Get data ----

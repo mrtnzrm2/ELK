@@ -251,8 +251,8 @@ class Hierarchical_Entropy:
       print("Print hierarchy newicks")
       pre_newick = {}
       self.zdict2pre_newick(tree, self.root, "", pre_newick, weighted=weighted)
-      self.newick = self.newickify(pre_newick, root_node=self.root)
-      print(self.newick, "\n")
+      newick = self.newickify(pre_newick, root_node=self.root)
+      return newick
 
   def newickify(self, node_to_children, root_node) -> str:
     """Source code: https://stackoverflow.com/questions/50003007/how-to-convert-python-dictionary-to-newick-form-format"""

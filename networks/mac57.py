@@ -1,65 +1,66 @@
 from os.path import join
 import pandas as pd
 import numpy as np
-# ELK libraries ----
-from networks.base import BASE
+from pathlib import Path
 from various.network_tools import *
+from networks.base import BASE
 
-class MAC29(BASE):
-  def __init__(
-    self, **kwargs
-  ) -> None:
-    super().__init__(subject="MAC", structure="ANLNe", version="29d91", **kwargs)
+class MAC57(BASE):
+  def __init__(self, distance="tracto16", **kwargs) -> None:
+    super().__init__(**kwargs)
     #  Paths as labels
-    self.csv_path = "../CSV/MAC/29d91/"
-    self.distance_path = f"../CSV/MAC/29d91/MAP3D/"
+    self.csv_path = "../CSV/MAC/57d106_230605/"
+    self.distance_path = f"../CSV/MAC/57d106_230605/{distance}/"
     self.labels_path = self.csv_path
     self.regions_path = join(
       "../CSV/Regions",
       "Table_areas_regions_09_2019.csv"
     )
     # Get structure network ----
-    self.C, self.A = self.get_structure()
+    self.C = self.get_structure()
+    self.CC, self.A = self.get_summer_counts()
     # Get network's spatial distances ----
-    self.D = self.get_distance_MAP3D()
-    # Get regions ----
+    self.D = self.get_distance_tracto16()
     self.get_regions()
 
   def get_structure(self):
     # Get structure ----
-    file = pd.read_csv(f"{self.csv_path}/Neurons91x29_Arithmean_DBV23.45.csv", index_col=0, header=0)
-    col_labs = list(file.columns)
-    row_labs = list(file.index)
-    new_labs = col_labs + [r for r in row_labs if r not in col_labs]
-    file = file.loc[new_labs, :]
-    C = file.to_numpy()
-    A = C / np.sum(C, axis=0)
+    file = pd.read_csv(f"{self.csv_path}/CountMatrix_Averaged_57areas_230605.csv", index_col=0)
+    ## Areas to index
+    tlabel = file.columns.to_numpy()
+    slabel = file.index.to_numpy()
+    slabel1 = [lab for lab in slabel if lab not in tlabel and lab != "Claustrum"]
+    slabel = np.array(list(tlabel) + slabel1)
+    ## Average Count
+    C = file[tlabel].loc[slabel]
+    C = C.to_numpy(dtype=float)
+    # A = C / np.sum(C, axis=0)
     self.rows = C.shape[0]
     self.nodes = C.shape[1]
-    self.struct_labels = new_labs
+    self.struct_labels = slabel
     self.struct_labels = np.char.lower(self.struct_labels)
     self.labels = self.struct_labels
-    return C.astype(float), A.astype(float)
+    # np.savetxt(f"{self.csv_path}/labels57.csv", self.struct_labels,  fmt='%s')
+    return C.astype(float)
 
-  def get_distance_MAP3D(self):
-    fname =  join(self.distance_path, "DistanceMatrix Map3Dmars2019_91x91.csv")
+  def get_summer_counts(self):
+    file = pd.read_csv(f"{self.csv_path}/CountMatrix_Summed_57areas_220830.csv", index_col=0)
+    file.columns = np.char.lower(file.columns.to_numpy(dtype=str))
+    file.index = np.char.lower(file.index.to_numpy(dtype=str))
+    file = file[self.struct_labels[:self.nodes]].loc[self.struct_labels]
+    CC = file.to_numpy(dtype=float)
+    A = CC / np.sum(CC, axis=0)
+    return CC, A
+  
+  def get_distance_tracto16(self):
+    fname =  join(self.distance_path, "106x106_DistanceMatrix.csv")
     file = pd.read_csv(fname, index_col=0)
-    clabel =file.columns.to_numpy()
-    clabel = np.array([str(lab) for lab in clabel])
-    clabel = np.char.lower(clabel)
-
-    D2C = {
-      "pi" : "parainsula"
-    }
-    for key, val in D2C.items():
-      clabel[clabel == key] = val
-
-    D = file.to_numpy()
-    order = match(self.struct_labels, clabel)
-    D = D[order, :][:, order]
-    D = np.array(D)
+    # print(file.columns.to_numpy())
+    file.columns = np.char.lower(file.columns.to_numpy(dtype=str))
+    file.index = np.char.lower(file.index.to_numpy(dtype=str))
+    D = file[self.struct_labels].loc[self.struct_labels]
+    D = D.to_numpy()
     np.fill_diagonal(D, 0.)
-    D = D.astype(float)
     return D
   
   def MAC_region_colors(self):

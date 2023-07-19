@@ -761,3 +761,14 @@ class Plot_H:
       array_pos = np.array([list(pos[v]) for v in pos.keys()])
       plt.xlim(-0.1 + np.min(array_pos, axis=0)[0], np.max(array_pos, axis=0)[0] + 0.1)
       plt.ylim(-0.1 + np.min(array_pos, axis=0)[1], np.max(array_pos, axis=0)[1] + 0.1)
+
+  def plot_newick(self, newick : str, width=8, height=7):
+    from Bio import Phylo
+    from io import StringIO
+    tree = Phylo.read(StringIO(newick), "newick")
+    tree.ladderize()
+    _, ax = plt.subplots(1, 1, figsize=(width, height))
+    area = self.colregion.regions.AREA.to_numpy().astype(str)
+    color = self.colregion.regions.COLOR.to_numpy()
+    color_tip = {k: v for k, v in zip(area, color)}
+    Phylo.draw(tree, axes=ax, label_colors=color_tip)

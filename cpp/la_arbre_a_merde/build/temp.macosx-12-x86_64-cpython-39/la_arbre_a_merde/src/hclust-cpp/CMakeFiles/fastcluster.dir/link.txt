@@ -1,0 +1,2 @@
+/Library/Developer/CommandLineTools/usr/bin/ar qc libfastcluster.a CMakeFiles/fastcluster.dir/fastcluster.cpp.o
+/Library/Developer/CommandLineTools/usr/bin/ranlib libfastcluster.a

@@ -1,0 +1,7 @@
+Metadata-Version: 2.1
+Name: simquest
+Version: 0.0
+Summary: Create simquest class
+Author: Jorge Martinez Armas
+Author-email: jmarti53@nd.edu
+Requires-Python: >=3.6

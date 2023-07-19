@@ -1,0 +1,5 @@
+Copyright:
+  * fastcluster_dm.cpp & fastcluster_R_dm.cpp:
+     © 2011 Daniel Müllner <http://danifold.net>
+  * fastcluster.(h|cpp) & demo.cpp & plotresult.r:
+     © 2018 Christoph Dalitz <http://www.hsnr.de/ipattern/>

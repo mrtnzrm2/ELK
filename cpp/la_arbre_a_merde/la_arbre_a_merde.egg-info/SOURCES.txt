@@ -1,6 +1,0 @@
-setup.py
-la_arbre_a_merde.egg-info/PKG-INFO
-la_arbre_a_merde.egg-info/SOURCES.txt
-la_arbre_a_merde.egg-info/dependency_links.txt
-la_arbre_a_merde.egg-info/not-zip-safe
-la_arbre_a_merde.egg-info/top_level.txt

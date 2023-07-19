@@ -322,7 +322,7 @@ class Plot_H:
     plt.xticks(rotation=90) 
 
   def lcmap_size(
-    self, K, cmap_name="husl", width=10, height=10, remove_labels=False, undirected=False, **kwargs
+    self, k : int, cmap_name="husl", width=10, height=10, remove_labels=False, undirected=False, **kwargs
   ):
     print("Visualize LC memberships ordered by nodal community sizes!!!")
     # Get labels ----
@@ -338,87 +338,85 @@ class Plot_H:
       flag_fq = False
     if "order" in kwargs.keys():
       I = kwargs["order"]
-    for k in K:
-      # FLN to dataframe and filter FLN = 0 ----
-      dA = self.dA.copy()
-      # Add id with aesthethis ----
-      from scipy.cluster.hierarchy import cut_tree
-      if not undirected:
-          dA["id"] =  cut_tree(
-            self.H,
-            n_clusters = k
-          ).ravel()
-      else:
-        dA["id"] = np.tile(cut_tree(
+    dA = self.dA.copy()
+    # Add id with aesthethis ----
+    from scipy.cluster.hierarchy import cut_tree
+    if not undirected:
+        dA["id"] =  cut_tree(
           self.H,
           n_clusters = k
-        ).ravel(), 2)
-      minus_one_Dc(dA, undirected)
-      aesthetic_ids(dA)
-      keff = np.unique(
-        dA["id"].to_numpy()
-      ).shape[0]
+        ).ravel()
+    else:
+      dA["id"] = np.tile(cut_tree(
+        self.H,
+        n_clusters = k
+      ).ravel(), 2)
+    minus_one_Dc(dA, undirected)
+    aesthetic_ids(dA)
+    keff = np.unique(
+      dA["id"].to_numpy()
+    ).shape[0]
 
-      dA = df2adj(dA, var="id")
-      dA = dA[I, :][:, I]
-      dA[dA == 0] = np.nan
-      dA[dA > 0] = dA[dA > 0] - 1
+    dA = df2adj(dA, var="id")
+    dA = dA[I, :][:, I]
+    dA[dA == 0] = np.nan
+    dA[dA > 0] = dA[dA > 0] - 1
 
-      # Configure labels ----
-      labels =  np.char.lower(labels[I].astype(str))
-      rlabels = np.array([str(r).lower() for r in regions.AREA])
-      colors = regions.COLOR.loc[match(labels, rlabels)].to_numpy()
-      # Create figure ----
-      fig, ax = plt.subplots(1, 1, figsize=(width, height))
-      # Check colors with and without trees (-1) ---
-      if -1 in dA:
-        save_colors = sns.color_palette(cmap_name, keff - 1)
-        cmap_heatmap = [[]] * keff
-        cmap_heatmap[0] = [199/ 255.0, 0, 57/ 255.0]
-        cmap_heatmap[1:] = save_colors
-      else:
-        cmap_heatmap = sns.color_palette(cmap_name, keff)
-      if not remove_labels:
-        plot = sns.heatmap(
-          dA,
-          xticklabels=labels[:self.nodes],
-          yticklabels=labels,
-          cmap=cmap_heatmap,
-          ax = ax
-        )
-        if "font_size" in kwargs.keys():
-          if kwargs["font_size"] > 0:
-            plot.set_xticklabels(
-              plot.get_xmajorticklabels(), fontsize = kwargs["font_size"]
-            )
-            plot.set_yticklabels(
-              plot.get_ymajorticklabels(), fontsize = kwargs["font_size"]
-            )
-        # Setting labels colors ----
-        [t.set_color(i) for i,t in zip(colors, ax.xaxis.get_ticklabels())]
-        [t.set_color(i) for i,t in zip(colors, ax.yaxis.get_ticklabels())]
-      else:
-        sns.heatmap(
-          dA,
-          xticklabels=False,
-          yticklabels=False,
-          cmap=cmap_heatmap,
-          ax = ax
-        )
-      # Add black lines ----
-      if flag_fq:
-        c = 0
-        for key in fq:
-          c += fq[key]
-          if c < self.nodes:
-            ax.vlines(
-              c, ymin=0, ymax=self.nodes,
-              colors=["black"]
-            )
-            ax.hlines(
-              c, xmin=0, xmax=self.nodes,
-              colors=["black"]
-            )
+    # Configure labels ----
+    labels =  np.char.lower(labels[I].astype(str))
+    rlabels = np.array([str(r).lower() for r in regions.AREA])
+    colors = regions.COLOR.loc[match(labels, rlabels)].to_numpy()
+    # Create figure ----
+    fig, ax = plt.subplots(1, 1, figsize=(width, height))
+    # Check colors with and without trees (-1) ---
+    if -1 in dA:
+      save_colors = sns.color_palette(cmap_name, keff - 1)
+      cmap_heatmap = [[]] * keff
+      cmap_heatmap[0] = [199/ 255.0, 0, 57/ 255.0]
+      cmap_heatmap[1:] = save_colors
+    else:
+      cmap_heatmap = sns.color_palette(cmap_name, keff)
+    if not remove_labels:
+      plot = sns.heatmap(
+        dA,
+        xticklabels=labels[:self.nodes],
+        yticklabels=labels,
+        cmap=cmap_heatmap,
+        ax = ax
+      )
+      if "font_size" in kwargs.keys():
+        if kwargs["font_size"] > 0:
+          plot.set_xticklabels(
+            plot.get_xmajorticklabels(), fontsize = kwargs["font_size"]
+          )
+          plot.set_yticklabels(
+            plot.get_ymajorticklabels(), fontsize = kwargs["font_size"]
+          )
+      # Setting labels colors ----
+      [t.set_color(i) for i,t in zip(colors, ax.xaxis.get_ticklabels())]
+      [t.set_color(i) for i,t in zip(colors, ax.yaxis.get_ticklabels())]
+    else:
+      sns.heatmap(
+        dA,
+        xticklabels=False,
+        yticklabels=False,
+        cmap=cmap_heatmap,
+        ax = ax
+      )
+    # Add black lines ----
+    if flag_fq:
+      c = 0
+      for key in fq:
+        c += fq[key]
+        if c < self.nodes:
+          ax.vlines(
+            c, ymin=0, ymax=self.nodes,
+            colors=["black"]
+          )
+          ax.hlines(
+            c, xmin=0, xmax=self.nodes,
+            colors=["black"]
+          )
     
   def lcmap_dendro(
     self, R : int, K : int, cmap_name="hls", remove_labels= False,

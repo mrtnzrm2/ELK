@@ -54,6 +54,7 @@ class simquest {
 		std::vector<std::vector<double> > get_source_matrix();
 		std::vector<std::vector<double> > get_target_matrix();
 		double jacp(std::vector<double> &u, std::vector<double> &v, int &ii, int &jj);
+		double jacw(std::vector<double> &u, std::vector<double> &v, int &ii, int &jj);
 		double tanimoto_coefficient(std::vector<double> &u, std::vector<double> &v, int &ii, int &jj);
 		double cosine_similarity(std::vector<double> &u, std::vector<double> &v, int &ii, int &jj);
 		double S1_2(std::vector<double> &u, std::vector<double> &v, int &ii, int&jj);
@@ -281,6 +282,24 @@ double simquest::jacp(
 	return JACP;
 }
 
+double simquest::jacw(
+	std::vector<double> &u, std::vector<double> &v, int &ii, int &jj
+) {
+	int N = u.size();
+	double mi =0., ma=0.;
+	for (int i=0; i < N; i++) {
+		if (i == ii || i == jj) continue;
+		mi += std::min(u[i], v[i]);
+		ma += std::max(u[i], v[i]);
+	}
+	mi += std::min(u[jj], v[ii]);
+	ma += std::max(u[jj], v[ii]);
+
+	mi += std::min(u[ii], v[jj]);
+	ma += std::max(u[ii], v[jj]);
+	return mi / ma;
+}
+
 double simquest::similarity_index(std::vector<double> &u, std::vector<double> &v, int &ii, int &jj, const int &index) {
 	// Jaccard probability index
   if (index == 0) {
@@ -299,6 +318,9 @@ double simquest::similarity_index(std::vector<double> &u, std::vector<double> &v
 	}
 	else if (index == 4) {
 		return S1_2(u, v, ii, jj);
+	}
+	else if (index == 5) {
+		return jacw(u, v, ii, jj);
 	}
   else {
     std::range_error("Similarity index must be a integer from 0 to 4\n");

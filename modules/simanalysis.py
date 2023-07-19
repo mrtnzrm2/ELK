@@ -25,7 +25,7 @@ class Sim:
       "MIX" : 0, "SOURCE" : 1, "TARGET" : 2
     }
     self.indices = {
-      "jacp" : 0, "tanimoto" : 1, "cos" : 2, "bsim" : 3,  "S1_2" : 4
+      "jacp" : 0, "tanimoto" : 1, "cos" : 2, "bsim" : 3,  "S1_2" : 4, "jacw" : 5
     }
     self.lup = lookup
     self.topology = topology

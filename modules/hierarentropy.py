@@ -246,9 +246,7 @@ class Hierarchical_Entropy:
       for leaves in leaves_names:
         self.zdict2pre_newick(tree[root], leaves, key_pred + root, pre_newick, weighted=weighted)
 
-  def zdict2newick(self, tree, weighted=False, on=True):
-    if on:
-      print("Print hierarchy newicks")
+  def zdict2newick(self, tree, weighted=False):
       pre_newick = {}
       self.zdict2pre_newick(tree, self.root, "", pre_newick, weighted=weighted)
       newick = self.newickify(pre_newick, root_node=self.root)

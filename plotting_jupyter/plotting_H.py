@@ -106,7 +106,7 @@ class Plot_H:
     plt.legend([],[], frameon=False)
     plt.xscale("log")
 
-  def plotSloop(self, width=8, height=6, **kwargs):
+  def plotHL(self, width=8, height=6, **kwargs):
     print("\t> Plot loop entropy as a function of K")
     # Create figure ----
     fig, ax = plt.subplots(1, 1, figsize=(width, height))
@@ -116,6 +116,7 @@ class Plot_H:
       y="S",
       ax=ax
     )
+    ax.set_ylabel(r"$H_{L}$")
     plt.legend([],[], frameon=False)
     plt.xscale("log")
 
@@ -769,4 +770,6 @@ class Plot_H:
     area = self.colregion.regions.AREA.to_numpy().astype(str)
     color = self.colregion.regions.COLOR.to_numpy()
     color_tip = {k: v for k, v in zip(area, color)}
-    Phylo.draw(tree, axes=ax, label_colors=color_tip)
+    Phylo.draw(tree, axes=ax, label_colors=color_tip, do_show=False)
+    ax.set_ylabel("")
+    ax.yaxis.set_tick_params(labelleft=False)

@@ -82,7 +82,7 @@ def get_best_kr_equivalence(score, H):
     k = get_k_from_D(H.FH)
   elif score == "_X":
     k = get_k_from_X(H.FH, order=0)
-  elif score == "_S":
+  elif score == "_HL":
     k = get_k_from_S(H.FH)
   elif score == "_SD":
     k = get_k_from_SD(H.FH)

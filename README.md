@@ -1,5 +1,5 @@
 # ELK
-ELK is a link community algorithm created to find communities in directed networks with heterogeneous weights.
+ELK is a link community algorithm created to find communities in dense, directed networks with heterogeneous weights.
 
  ## Introduction
  Welcome everyone! How good of you to spend some time looking at this software. I consider this software an extension of the original link community algorithm ([Ahn et al., 2010](https://doi.org/10.1038/nature09182)).

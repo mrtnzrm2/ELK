@@ -17,31 +17,31 @@ We had to add several pieces to improve the link community algorithm to use it i
 
 2. **Node community dendrogram**: Link communities, when introduced, was exciting since nodes naturally can belong to multiple groups through their links. This property is natural in many social, economic, and biological networks. However, interpreting link communities is not apparent, and associated node community structures are needed to understand the network's structure.
 
-We made an algorithm that projects the link merging process to a node merging process, allowing one to obtain a node community dendrogram that significantly simplifies the search for meaningful clusters. This tactic solves the problem since a hierarchy is the data structure that allows nodes to belong to one group at a level or split up into several in another, preserving the original intention of link communities to partition the nodes into several groups or **covers**.
+  We made an algorithm that projects the link merging process to a node merging process, allowing one to obtain a node community dendrogram that significantly simplifies the search for meaningful clusters. This tactic solves the problem since a hierarchy is the data structure that allows nodes to belong to one group at a level or split up into several in another, preserving the original intention of link communities to partition the nodes into several groups or **covers**.
 
 3. **Computing similarities using different topologies**: You can choose to find node communities for how similar their source or/and target connections are. In directed networks, nodes can have different functions from the perspective of acting or receiving the action of other nodes. Our algorithm can produce partitions considering the direction of interest, making them easier to interpret.
 
 4. **Novel quality function for link communities: The loop entropy ($H_{L}$)**: As it is well known, the concept of a community can have multiple interpretations; however, it is well accepted that the communities tend to be formed by the set of nodes with more connections between them than with the rest of the network. But what happens when the network is so dense that modularity, i.e., the density of a cluster compared to a random network, stops being a good quality function to detect the best partition?
 
- To solve that problem, we introduce the loop entropy, $H_{L}$, which measures the quality of a link partition for the amount of helpful link community information. In information theory, entropy measures the expected information of a random variable. In this case, the random variable is the distribution of effective links in a link community in the network. The number of effective links in a link community is the number of excess links with respect to a tree version of that link community.
+  To solve that problem, we introduce the loop entropy, $H_{L}$, which measures the quality of a link partition for the amount of helpful link community information. In information theory, entropy measures the expected information of a random variable. In this case, the random variable is the distribution of effective links in a link community in the network. The number of effective links in a link community is the number of excess links with respect to a tree version of that link community.
 
- In a tree network with $n$ nodes, there are $m=n-1$ links. Then, the number of effective links in a link community $c$ is
+  In a tree network with $n$ nodes, there are $m=n-1$ links. Then, the number of effective links in a link community $c$ is
 
-$m_{f}^{c} = m^{c} - (n^{c} - 1)$,
+  $m_{f}^{c} = m^{c} - (n^{c} - 1)$,
 
-The network's total number of possible effective links is $M - N + 1$, where $M$ and $N$ are the total number of (un)directed links and nodes. Then, the probability of picking at random an effective link from the link community $c$ is
+  The network's total number of possible effective links is $M - N + 1$, where $M$ and $N$ are the total number of (un)directed links and nodes. Then, the probability of picking at random an effective link from the link community $c$ is
+  
+  $p_{c} = \frac{m_{f}^{c}}{M-N+1}$.
 
-$p_{c} = \frac{m_{f}^{c}}{M-N+1}$.
+  On the other hand, the probability of picking an ineffective link is
 
-On the other hand, the probability of picking an ineffective link is
+  $q = 1 - \frac{\sum_{c} m_{f}^{c}}{M-N+1}$.
 
-$q = 1 - \frac{\sum_{c} m_{f}^{c}}{M-N+1}$.
+  Then, the loop entropy of the link partition is
 
-Then, the loop entropy of the link partition is
+  $H_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$.
 
-$H_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$.
-
-By selecting the link partition with the highest loop entropy, we choose the state of the link partition with the most information, which, at the same time, is the state between the domination of small tree-like link communities and complex loop-like link communities.
+  By selecting the link partition with the highest loop entropy, we choose the state of the link partition with the most information, which, at the same time, is the state between the domination of small tree-like link communities and complex loop-like link communities.
  
  We have tested the loop entropy and average link density quality functions to find the node partition of [LFR](https://doi.org/10.1103/PhysRevE.80.016118) benchmark networks. The results show that both quality functions work similarly, but the loop entropy still works in dense networks.
 

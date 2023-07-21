@@ -27,7 +27,7 @@ We made an algorithm that projects the link merging process to a node merging pr
 
  In a tree network with $n$ nodes, there are $m=n-1$ links. Then, the number of effective links in a link community $c$ is
 
-$m_{f}^_{c} = m^{c} - (n^{c} - 1)$,
+$m_{f}^{c} = m^{c} - (n^{c} - 1)$,
 
 The total number of possible effective links in the nework is $M - N + 1$, where $M$ and $N$ are the total number of (un)directed links and nodes in the network. Then, the probability of picking at random an effective link from the link community $c$ is
 

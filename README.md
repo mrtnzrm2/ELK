@@ -27,19 +27,19 @@ We made an algorithm that projects the link merging process to a node merging pr
 
  In a tree network with $n$ nodes, there are $m=n-1$ links. Then, the number of effective links in a link community $c$ is
 
-$$m_{f}^_{c} = m^{c} - (n^{c} - 1)$$,
+$m_{f}^_{c} = m^{c} - (n^{c} - 1)$,
 
 The total number of possible effective links in the nework is $M - N + 1$, where $M$ and $N$ are the total number of (un)directed links and nodes in the network. Then, the probability of picking at random an effective link from the link community $c$ is
 
-$$p_{c} = \frac{m_{f}^{c}}{M-N+1}$$.
+$p_{c} = \frac{m_{f}^{c}}{M-N+1}$.
 
 On the other hand, the probability of picking an uneffective link is
 
-$$q = 1 - \frac{\sum_{c} m_{f}^{c}}{M-N+1}$$.
+$q = 1 - \frac{\sum_{c} m_{f}^{c}}{M-N+1}$.
 
 Then, the loop entropy of the link partition is
 
-$$H_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$$.
+$H_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$.
 
 By selecting the link partition with the highest loop entropy, we select the state the link partition with the highest useful link community information which, in the same time, is the state between the domination of small tree-like link communities and complex loop-like link communities.
  

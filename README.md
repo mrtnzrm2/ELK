@@ -23,27 +23,27 @@ We made an algorithm that projects the link merging process to a node merging pr
 
 **Novel quality function for link communities: The loop entropy ($H_{L}$)**: As it is well known, the concept of a community can have multiple interpretations; however, it is well accepted that the communities tend to be formed by the set of nodes with more connections between them than with the rest of the network. But what happens when the network is so dense that modularity, i.e., the density of a cluster compared to a random network, stops being a good quality function to detect the best partition?
 
-  To solve that problem, we introduce the loop entropy, $H_{L}$, which measures the quality of a link partition for the amount of helpful link community information. In information theory, entropy measures the expected information of a random variable. In this case, the random variable is the distribution of effective links in a link community in the network. The number of effective links in a link community is the number of excess links with respect to a tree version of that link community.
+To solve that problem, we introduce the loop entropy, $H_{L}$, which measures the quality of a link partition for the amount of helpful link community information. In information theory, entropy measures the expected information of a random variable. In this case, the random variable is the distribution of effective links in a link community in the network. The number of effective links in a link community is the number of excess links with respect to a tree version of that link community.
 
-  In a tree network with $n$ nodes, there are $m=n-1$ links. Then, the number of effective links in a link community $c$ is
+In a tree network with $n$ nodes, there are $m=n-1$ links. Then, the number of effective links in a link community $c$ is
 
-  $m_{f}^{c} = m^{c} - (n^{c} - 1)$,
+$m_{f}^{c} = m^{c} - (n^{c} - 1)$,
 
-  The network's total number of possible effective links is $M - N + 1$, where $M$ and $N$ are the total number of (un)directed links and nodes. Then, the probability of picking at random an effective link from the link community $c$ is
-  
-  $p_{c} = \frac{m_{f}^{c}}{M-N+1}$.
+The network's total number of possible effective links is $M - N + 1$, where $M$ and $N$ are the total number of (un)directed links and nodes. Then, the probability of picking at random an effective link from the link community $c$ is
 
-  On the other hand, the probability of picking an ineffective link is
+$p_{c} = \frac{m_{f}^{c}}{M-N+1}$.
 
-  $q = 1 - \frac{\sum_{c} m_{f}^{c}}{M-N+1}$.
+On the other hand, the probability of picking an ineffective link is
 
-  Then, the loop entropy of the link partition is
+$q = 1 - \frac{\sum_{c} m_{f}^{c}}{M-N+1}$.
 
-  $H_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$.
+Then, the loop entropy of the link partition is
 
-  By selecting the link partition with the highest loop entropy, we choose the state of the link partition with the most information, which, at the same time, is the state between the domination of small tree-like link communities and complex loop-like link communities.
+$H_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$.
+
+By selecting the link partition with the highest loop entropy, we choose the state of the link partition with the most information, which, at the same time, is the state between the domination of small tree-like link communities and complex loop-like link communities.
  
- We have tested the loop entropy and average link density quality functions to find the node partition of [LFR](https://doi.org/10.1103/PhysRevE.80.016118) benchmark networks. The results show that both quality functions work similarly, but the loop entropy still works in dense networks.
+We have tested the loop entropy and average link density quality functions to find the node partition of [LFR](https://doi.org/10.1103/PhysRevE.80.016118) benchmark networks. The results show that both quality functions work similarly, but the loop entropy still works in dense networks.
 
 ## Why is ELK different from the rest of the community detection algorithms?
 - We focus on finding the community structure of the anatomical neural network of retrograde tract-tracing experiments of the macaque monkey. The network is known to be dense, directed, and heterogeneous, and because of experimental challenges, only a subgraph from the total graph is known. The complete network has 106 nodes and is denoted as $G_{106\times 106}$; however, we have a subset $G_{106\times 57}$ representing the links and number of neurons to $57$ areas from the whole atlas. We aim to find communities in the edge-complete subgraph $G_{57\times 57}$ but consider the whole measured subgraph $G_{106\times 57}$. The difference is that few community detection algorithms can find partitions in a subgraph using the information of the connections outside of the graph, as happens in our case.
@@ -107,7 +107,7 @@ There is still plenty of work to do. Some of the points to improve are:
 
 ## References
 - Ahn, YY., Bagrow, J. & Lehmann, S. Link communities reveal multiscale network complexity. Nature 466, 761–764 (2010). https://doi.org/10.1038/nature09182
-- Lancichinetti, A., & Fortunato, S. (2009). Benchmarks for testing community detection algorithms on directed and weighted graphs with overlapping communities. Phys. Rev. E, 80, 016118.
+- Lancichinetti, A., & Fortunato, S. (2009). [Benchmarks for testing community detection algorithms on directed and weighted graphs with overlapping communities](https://doi.org/10.1103/PhysRevE.80.016118). Phys. Rev. E, 80, 016118.
 - Markov, N.T., Misery, P., Falchier, A., Lamy, C., Vezoli, J., Quilodran, R., Gariel,
 M.A., Giroud, P., Ercsey-Ravasz, M., Pilaz, L.J., et al. (2011). Weight consistency
 specifies the regularities of macaque cortical networks. Cereb. Cortex 21,

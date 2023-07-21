@@ -8,14 +8,14 @@ ELK is a link community algorithm created to find communities in dense, directed
 
  There are several community detection algorithms for different network classes. However, finding communities in **dense**, **directed**, and **heterogeneous weight** distribution networks, as the macaque retrograde tract-tracing network (Markov et al. 2011 and 2012), is still an open question since it is not clear what a community means in such complex system. Therefore, we started to work on an algorithm to overcome the challenges of identifying communities in this type of network.
 
-Our journey led us to the link community algorithm, which has many essential features, such as assigning nodes to multiple clusters. Nevertheless, to make it work in anatomical neural networks, we had to add several features to the algorithm. We have baptized the algorithm **ELK** to distinguish it from the original. However, the new features allow the usage of the algorithm to cortical networks, and, in general, any (un)directed, sparse/dense, (un)weighted, and simple network (without self-loops and multiple links between the same nodes).
+Our journey led us to the link community algorithm, which has many essential features, such as assigning nodes to multiple clusters. Nevertheless, we had to add several features to the algorithm to make it work in anatomical neural networks. We have baptized the algorithm **ELK** to distinguish it from the original. However, the new features allow the usage of the algorithm to cortical networks and, in general, any (un)directed, sparse/dense, (un)weighted, and simple network (without self-loops and multiple links between the same nodes).
 
 ## New features
 We had to add several pieces to improve the link community algorithm to use it in more general networks. The most important are the following:
 
 1. **Novel link neighborhood concepts**: We introduce novel link neighborhood definitions for directed graphs. Our interpretation diverges from the literature, especially the definition of line digraphs. The new criteria have many graph-theoretical implications that are still undiscovered.
 
-2. **Node community dendrogram**: Link communities, when introduced, were exciting since nodes naturally can belong to multiple groups through their links. This property is natural in many social, economic, and biological networks. However, interpreting link communities is not obvious, and associated node community structures are needed to understand the network's structure.
+2. **Node community dendrogram**: Link communities, when introduced, was exciting since nodes naturally can belong to multiple groups through their links. This property is natural in many social, economic, and biological networks. However, interpreting link communities is not apparent, and associated node community structures are needed to understand the network's structure.
 
 We made an algorithm that projects the link merging process to a node merging process, allowing one to obtain a node community dendrogram that significantly simplifies the search for meaningful clusters. This tactic solves the problem since a hierarchy is the data structure that allows nodes to belong to one group at a level or split up into several in another, preserving the original intention of link communities to partition the nodes into several groups or **covers**.
 
@@ -23,17 +23,17 @@ We made an algorithm that projects the link merging process to a node merging pr
 
 4. **Novel quality function for link communities: The loop entropy ($H_{L}$)**: As it is well known, the concept of a community can have multiple interpretations; however, it is well accepted that the communities tend to be formed by the set of nodes with more connections between them than with the rest of the network. But what happens when the network is so dense that modularity, i.e., the density of a cluster compared to a random network, stops being a good quality function to detect the best partition?
 
- To solve that problem, we introduce the loop entropy, $H_{L}$, which measures the quality of a link partition for the amount of useful link community information. In information theory, entropy measures the expected information of a random variable. In this case, the random variable is the distribution of effective links in a link community in the network. The number of effective links in a link community is the number of excess links respect to a tree version of that link community.
+ To solve that problem, we introduce the loop entropy, $H_{L}$, which measures the quality of a link partition for the amount of helpful link community information. In information theory, entropy measures the expected information of a random variable. In this case, the random variable is the distribution of effective links in a link community in the network. The number of effective links in a link community is the number of excess links with respect to a tree version of that link community.
 
  In a tree network with $n$ nodes, there are $m=n-1$ links. Then, the number of effective links in a link community $c$ is
 
 $m_{f}^{c} = m^{c} - (n^{c} - 1)$,
 
-The total number of possible effective links in the nework is $M - N + 1$, where $M$ and $N$ are the total number of (un)directed links and nodes in the network. Then, the probability of picking at random an effective link from the link community $c$ is
+The network's total number of possible effective links is $M - N + 1$, where $M$ and $N$ are the total number of (un)directed links and nodes. Then, the probability of picking at random an effective link from the link community $c$ is
 
 $p_{c} = \frac{m_{f}^{c}}{M-N+1}$.
 
-On the other hand, the probability of picking an uneffective link is
+On the other hand, the probability of picking an ineffective link is
 
 $q = 1 - \frac{\sum_{c} m_{f}^{c}}{M-N+1}$.
 
@@ -41,14 +41,14 @@ Then, the loop entropy of the link partition is
 
 $H_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$.
 
-By selecting the link partition with the highest loop entropy, we select the state the link partition with the highest useful link community information which, in the same time, is the state between the domination of small tree-like link communities and complex loop-like link communities.
+By selecting the link partition with the highest loop entropy, we choose the state of the link partition with the most information, which, at the same time, is the state between the domination of small tree-like link communities and complex loop-like link communities.
  
- We have tested the loop entropy and averange link density quality functions to find the node partition of [LFR](https://doi.org/10.1103/PhysRevE.80.016118) benchmark networks. The results show that both quality functions work similarly, but the loop entropy still works in dense networks.
+ We have tested the loop entropy and average link density quality functions to find the node partition of [LFR](https://doi.org/10.1103/PhysRevE.80.016118) benchmark networks. The results show that both quality functions work similarly, but the loop entropy still works in dense networks.
 
 ## Why is ELK different from the rest of the community detection algorithms?
-- We target our attention on finding the community structure of the anatomical neural network of retrograde tract tracing experiments of the macaque monkey. The network is known to be dense, directed, heterogeneous, and, because of experimental challenges, only a subgraph from the total graph is known. The complete network hast 106 nodes and is denoted as $G_{106\times 106}$; however, we have a subset $G_{106\times 57}$ representing the inlinks and number of neuros to $57$ areas from the whole atlas. Our goal is to find communities in the edge-complete subgraph $G_{57\times 57}$ but considering the whole measured subgrpah $G_{106\times 57}$. One difference is that there are not many community detection algorithms that can find partitions in a subgraph using the information of the connections outside of the graph, as happens in our case.
+- We focus on finding the community structure of the anatomical neural network of retrograde tract-tracing experiments of the macaque monkey. The network is known to be dense, directed, and heterogeneous, and because of experimental challenges, only a subgraph from the total graph is known. The complete network has 106 nodes and is denoted as $G_{106\times 106}$; however, we have a subset $G_{106\times 57}$ representing the links and number of neurons to $57$ areas from the whole atlas. We aim to find communities in the edge-complete subgraph $G_{57\times 57}$ but consider the whole measured subgraph $G_{106\times 57}$. The difference is that few community detection algorithms can find partitions in a subgraph using the information of the connections outside of the graph, as happens in our case.
 
-- Another difference is that our algorithm can extract a node hierarchy from the similarity infomation of the network. Using the node hierarchy, we can study the hierarchical organization of the network. Traditionally, community algorithms try to find the community structure with largest modularity or likelihood. By finding a node hierarchy we can find other meaningful scales in the network. This property is inherated by the original link community algorithm; however, without the node hierarchy, it is challenging to interpret and find the different community scales of a network.
+- Another difference is that our algorithm can extract a node hierarchy from the similarity information of the network. Using the node hierarchy, we can study the hierarchical organization of the network. Traditionally, community algorithms try to find the community structure with the largest modularity or likelihood. We can find other meaningful scales in the network by finding a node hierarchy. The original link community algorithm inherits this property; however, with the node hierarchy, it is easier to interpret and find the different community scales of a network.
 
 - A third difference is that our algorithm can work in dense networks since the most relevant link and node partition can be found using the loop entropy.
 
@@ -77,7 +77,7 @@ https://github.com/cdalitz/hclust-cpp.git
 ```
 4. Paste the repository in the cpp/process_hclust/src and cpp/la_arbre_a_merde/src.
 
-5. Install the C++ libraries in python by running:
+5. Install the C++ libraries in Python by running:
 
 ```
 pip3 install cpp/simquest
@@ -96,14 +96,14 @@ We have created several examples in Jupyter Notebooks to understand better how t
 
 - BowTie_example_two: In dense weighted networks, NOCs appear not only because of the lack of connections between groups of nodes but also for a contrasting weighted connectivity profile. The link community algorithm can identify this second type of NOC.
 
-- HSF_example: There are hierarchical scale-free networks besides the traditional hierarchical graphs as denser communities inside sparser ones. This network combines the hierarchical structure with the presence of hubs and the lack of scale, i.e., each level of the hierarchy replicates the level below. We can find the clusters in this complex network using a binary similarity index and ELK.
+- HSF_example: There are hierarchical scale-free networks besides the traditional hierarchical graphs as denser communities inside sparser ones. This network combines the hierarchical structure with the presence of hubs and the lack of scale, i.e., each level replicates the level below. We can find the clusters in this complex network using a binary similarity index and ELK.
 
 ## Open questions
 There is still plenty of work to do. Some of the points to improve are:
 
 - Low computational speed. Currently, the processing of link communities to identify the most exciting partitions is slow and scales as $O(M^{2})$ where $M$ is the number of links in the network. The link-to-node dendrogram projection also scales in the same way.
 
-- The algorithm identifies the NOCs but the algorithm to assign covers to them is very simple. Although it has been proved to work in LFR benchmarks, further research is needed to understand better if the extention of the cover predictability.
+- The algorithm identifies the NOCs, but the algorithm to assign covers to them is straightforward. Although it has been proven to work in LFR benchmarks, further research is needed to understand better the extension of the cover predictability.
 
 ## References
 - Ahn, YY., Bagrow, J. & Lehmann, S. Link communities reveal multiscale network complexity. Nature 466, 761–764 (2010). https://doi.org/10.1038/nature09182

@@ -9,7 +9,7 @@ from process_hclust import ph
 from la_arbre_a_merde import noeud_arbre
 from h_entropy import h_entropy as HE
 
-class Hierarchy(Sim):
+class ELK(Sim):
   def __init__(
     self, R, nodes, linkage, mode, topology="MIX", index="S1_2", cut=False, lookup=0, undirected=False, **kwargs
   ):

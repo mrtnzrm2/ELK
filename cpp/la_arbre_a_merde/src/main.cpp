@@ -319,7 +319,7 @@ void noeud_arbre::vite(const int &sp) {
           merge_list_clone.push_back(new_node);
           // eq
           eq[0] = k;
-          eq[1] = nodes - ct;
+          eq[1] = nodes - ct - 1;
           equivalence.push_back(eq);
           //
           ct++;
@@ -387,7 +387,7 @@ void noeud_arbre::vite(const int &sp) {
             }
             // eq
             eq[0] = k;
-            eq[1] = nodes - ct;
+            eq[1] = nodes - ct - 1;
             equivalence.push_back(eq);
             //
             ct++;
@@ -398,7 +398,7 @@ void noeud_arbre::vite(const int &sp) {
     }
     if (!eq_true) {
       eq[0] = k;
-      eq[1] = nodes - ct;
+      eq[1] = nodes - ct - 1;
       equivalence.push_back(eq);
     } else {
       eq_true = false;
@@ -409,13 +409,13 @@ void noeud_arbre::vite(const int &sp) {
     for (int kk = 0; kk < merge_list.size() - 1; kk++) {
       node_hierarchy[ct][0] = merge_list.back().merge;
       node_hierarchy[ct][1] = merge_list[kk].merge;
-      node_hierarchy[ct][2] = node_hierarchy[ct - 1][2] * 1.05;
+      node_hierarchy[ct][2] = node_hierarchy[ct - 1][2];
       node_hierarchy[ct][3] = merge_list.back().members.size() + merge_list[kk].members.size();
       merge_list.back().merge = ct + nodes;
       merge_list.back().members.push_back(merge_list[kk].members[0]);
       // eq
       eq[0] = k;
-      eq[1] = nodes - ct;
+      eq[1] = nodes - ct - 1;
       equivalence.push_back(eq);
       //
       ct++;

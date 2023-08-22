@@ -58,6 +58,7 @@ class simquest {
 		double tanimoto_coefficient(std::vector<double> &u, std::vector<double> &v, int &ii, int &jj);
 		double cosine_similarity(std::vector<double> &u, std::vector<double> &v, int &ii, int &jj);
 		double S1_2(std::vector<double> &u, std::vector<double> &v, int &ii, int&jj);
+		double H2(std::vector<double> &u, std::vector<double> &v, int &ii, int&jj);
 		double bin_similarity(std::vector<double> &u, std::vector<double> &v, int &ii, int &jj);
 };
 
@@ -203,6 +204,32 @@ double simquest::S1_2(
 	return JACP;
 }
 
+double simquest::H2(
+	std::vector<double> &u, std::vector<double> &v, int &ii, int &jj
+) {
+	int N = u.size();
+	double p = 0, pu = 0, pv = 0;
+	for (int j=0; j < N; j++){
+		pu += u[j];
+		pv += v[j];
+	}
+	if (pu > 0 && pv > 0) {
+		for (int i=0; i < N; i++){
+			if (i == ii | i == jj) continue;
+			p += pow(sqrt(u[i] / pu)  - sqrt(v[i] / pv), 2.);
+		}
+		if (ii < N && jj < N) {
+			p += pow(sqrt(u[jj] / pu) - sqrt(v[ii] / pv), 2.);
+			p += pow(sqrt(u[ii] / pu) - sqrt(v[jj] / pv), 2.);
+		}
+
+		return 1. - (0.5 * p);
+	}
+	else {
+		return 0.;
+	}
+}
+
 double simquest::bin_similarity(
 	std::vector<double> &u, std::vector<double> &v, int &ii, int &jj
 ) {
@@ -321,6 +348,9 @@ double simquest::similarity_index(std::vector<double> &u, std::vector<double> &v
 	}
 	else if (index == 5) {
 		return jacw(u, v, ii, jj);
+	}
+	else if (index == 6) {
+		return H2(u, v, ii, jj);
 	}
   else {
     std::range_error("Similarity index must be a integer from 0 to 4\n");

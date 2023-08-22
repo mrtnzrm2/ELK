@@ -1,16 +1,17 @@
 # Python libs ----
 import networkx as nx
 import seaborn as sns
+sns.set_context("talk")
 sns.set_theme()
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 # ELK libs ----
-from modules.hieraranalysis import Hierarchy
+from modules.main import ELK
 from various.network_tools import *
 
 class Plot_H:
-  def __init__(self, H : Hierarchy) -> None:
+  def __init__(self, H : ELK) -> None:
     ## Attributes ----
     self.leaves= H.leaves
     self.linkage = H.linkage
@@ -86,12 +87,11 @@ class Plot_H:
     fig, ax = plt.subplots(1, 1, figsize=(width, height))
     sns.lineplot(
       data=self.FH,
-      x="K",
+      x="height",
       y="D",
       ax=ax
     )
     plt.legend([],[], frameon=False)
-    plt.xscale("log")
 
   def plotX(self, **kwargs):
     print("Plot X as a function of K")
@@ -99,26 +99,26 @@ class Plot_H:
     fig, ax = plt.subplots(1, 1)
     sns.lineplot(
       data=self.FH,
-      x="K",
+      x="height",
       y="X",
       ax=ax
     )
     plt.legend([],[], frameon=False)
-    plt.xscale("log")
 
   def plotHL(self, width=8, height=6, **kwargs):
     print("\t> Plot loop entropy as a function of K")
     # Create figure ----
-    fig, ax = plt.subplots(1, 1, figsize=(width, height))
+    _, ax = plt.subplots(1, 1, figsize=(width, height))
     sns.lineplot(
       data=self.FH,
-      x="K",
+      x="height",
       y="S",
       ax=ax
     )
+    hbest = self.FH["height"].loc[self.FH["S"] == np.max(self.FH["S"])].to_numpy()[0]
     ax.set_ylabel(r"$H_{L}$")
+    ax.text(0.1, 0.7, f"best: {hbest:.2f}", transform=ax.transAxes, size=15)
     plt.legend([],[], frameon=False)
-    plt.xscale("log")
 
   def plotSD(self, width=8, height=6, **kwargs):
     print("Plot SD as a function of K")
@@ -173,6 +173,7 @@ class Plot_H:
       )
     fig.set_figwidth(width)
     fig.set_figheight(height)
+    plt.gca().set_ylabel("Height")
 
   def heatmap_size(self, width=10, height=10, remove_labels=False, **kwargs):
     print("Visualize network heatmap ordered by nodal community sizes!!!")
@@ -320,6 +321,8 @@ class Plot_H:
     # Setting labels colors ----
     [t.set_color(i) for i,t in zip(colors, ax.xaxis.get_ticklabels())]
     [t.set_color(i) for i,t in zip(colors, ax.yaxis.get_ticklabels())]
+    ax.set_xlabel("Target")
+    ax.set_ylabel("Source")
     plt.xticks(rotation=90) 
 
   def lcmap_size(
@@ -514,11 +517,12 @@ class Plot_H:
         linewidth=linewidth,
         colors=["black"]
       )
+    ax.set_xlabel("Target")
+    ax.set_ylabel("Source")
     plt.xticks(rotation=90)
 
   def plot_network_simple(self, rlabels, cmap_name="husl", width=10, height=10, **kwargs):
     print("\t> Plot network!!!")
-    rlabels = skim_partition(rlabels)
     unique_labels = np.unique(rlabels)
     number_of_communities = unique_labels.shape[0]
     if -1 in unique_labels:
@@ -607,8 +611,7 @@ class Plot_H:
   def plot_network_combined(self, k, R, partition, nocs : dict, sizes : dict, ang=0, width=8, height=8, cmap_name="hls", font_size=10, undirected=False, **kwargs):
       from scipy.cluster import hierarchy
       # Skim partition ----
-      new_partition = skim_partition(partition)
-      unique_clusters_id = np.unique(new_partition)
+      unique_clusters_id = np.unique(partition)
       keff = len(unique_clusters_id)
       # Generate all the colors in the color map -----
       if -1 in unique_clusters_id:
@@ -630,7 +633,7 @@ class Plot_H:
         nodes_memberships = {
           k : {"id" : [0] * (keff+1), "size" : [0] * (keff+1)} for k in np.arange(len(partition))
         }
-      for i, id in enumerate(new_partition):
+      for i, id in enumerate(partition):
         if id == -1: continue
         nodes_memberships[i]["id"][id + 1] = 1
         nodes_memberships[i]["size"][id + 1] = 1
@@ -644,8 +647,8 @@ class Plot_H:
             nodes_memberships[index_key]["id"][id + 1] = 1
             nodes_memberships[index_key]["size"][id + 1] = sizes[key][id]
       # Check unassigned ----
-      for i in np.arange(len(partition)):
-        if np.sum(nodes_memberships[i] == 0) == keff:
+      for i in np.arange(self.nodes):
+        if np.sum(np.array(nodes_memberships[i]["id"]) == 1) == 0:
           nodes_memberships[i]["id"][0] = 1
           nodes_memberships[i]["size"][0] = 1
       # Get edges colors ----
@@ -695,19 +698,25 @@ class Plot_H:
       plt.ylim(-0.1 + np.min(array_pos, axis=0)[1], np.max(array_pos, axis=0)[1] + 0.1)
 
   def plot_network_kk(self, R, partition, nocs : dict, sizes : dict, ang=0, width=8, height=6, front_edges=False, font_size=0.1, undirected=False, cmap_name="hls"):
-      new_partition = skim_partition(partition)
-      unique_clusters_id = np.unique(new_partition)
-      keff = len(unique_clusters_id)
-      save_colors = sns.color_palette(cmap_name, keff - 1)
-      cmap_heatmap = [[]] * keff
-      cmap_heatmap[0] = [199/ 255.0, 0, 57/ 255.0]
-      cmap_heatmap[1:] = save_colors
+      unique_clusters_id = np.unique(partition)
+      keff = unique_clusters_id.shape[0]
+      # Generate all the colors in the color map -----
+      if -1 in unique_clusters_id:
+        save_colors = sns.color_palette(cmap_name, keff - 1)
+        cmap_heatmap = [[]] * keff
+        cmap_heatmap[0] = [199 / 255.0, 0, 57 / 255.0]
+        cmap_heatmap[1:] = save_colors
+      else:
+        save_colors = sns.color_palette(cmap_name, keff)
+        cmap_heatmap = [[]] * (keff+1)
+        cmap_heatmap[0] = [199 / 255.0, 0, 57 / 255.0]
+        cmap_heatmap[1:] = save_colors
       # Assign memberships to nodes ----
       if -1 in unique_clusters_id:
         nodes_memberships = {k : {"id" : [0] * keff, "size" : [0] * keff} for k in np.arange(self.nodes)}
       else:
         nodes_memberships = {k : {"id" : [0] * (keff+1), "size" : [0] * (keff+1)} for k in np.arange(self.nodes)}
-      for i, id in enumerate(new_partition):
+      for i, id in enumerate(partition):
         if id == -1: continue
         nodes_memberships[i]["id"][id + 1] = 1
         nodes_memberships[i]["size"][id + 1] = 1
@@ -722,7 +731,7 @@ class Plot_H:
             nodes_memberships[index_key]["size"][id + 1] = sizes[key][id]
       # Check unassigned ----
       for i in np.arange(self.nodes):
-        if np.sum(np.array(nodes_memberships[i]["id"]) == 0) == keff:
+        if np.sum(np.array(nodes_memberships[i]["id"]) == 1) == 0:
           nodes_memberships[i]["id"][0] = 1
           nodes_memberships[i]["size"][0] = 1
         # elif np.sum(np.array(nodes_memberships[i]) != 0) > 2:
@@ -745,8 +754,7 @@ class Plot_H:
         else:
           nx.draw_networkx_edges(G, pos=pos, arrows=True, ax=ax)
       for node in G.nodes:
-
-        plt.pie(
+        a = plt.pie(
           [s for s in nodes_memberships[node]["size"] if s != 0], # s.t. all wedges have equal size
           center=pos[node], 
           colors = [cmap_heatmap[i] for i, id in enumerate(nodes_memberships[node]["id"]) if id != 0],

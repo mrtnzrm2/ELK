@@ -113,13 +113,10 @@ def combine_dics(f1, f2):
       f1[k] += f2[k]
 
 def reverse_partition(Cr, labels):
-  skm = skim_partition(Cr)
-  s = np.unique(skm).astype(int)
+  s = np.unique(Cr).astype(int)
   s = s[s != -1]
-  k = {
-    r : [] for r in s
-  }
-  for i, r in enumerate(skm):
+  k = {r : [] for r in s}
+  for i, r in enumerate(Cr):
     if r == -1: continue
     k[r].append(labels[i])
   return k
@@ -127,12 +124,8 @@ def reverse_partition(Cr, labels):
 def nocs2parition(partition: dict, nocs: dict):
   for noc in nocs.keys():
     for cover in nocs[noc]:
-      if cover == -1: 
-        if cover not in partition.keys():
-          partition[cover] = [str(noc)]
-        else: partition[cover].append(str(noc))
-      if cover not in partition.keys(): continue
-      if str(noc) not in partition[cover]: partition[cover].append(str(noc))
+      if str(noc) not in partition[cover]:
+        partition[cover].append(str(noc))
 
 def get_k_from_X(H, order=0):
   r = H["K"].loc[

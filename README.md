@@ -103,7 +103,7 @@ There is still plenty of work to do. Some of the points to improve are:
 
 - Low computational speed. Currently, the processing of link communities to identify the most exciting partitions is slow and scales as $O(M^{2})$ where $M$ is the number of links in the network. The link-to-node dendrogram projection also scales in the same way.
 
-- The algorithm identifies the NOCs, but the algorithm to assign covers to them is straightforward. Although it has been proven to work in LFR benchmarks, further research is needed to understand better the extension of the cover predictability.
+- The algorithm identifies the NOCs, but the algorithm to assign covers to them is ad hoc. Although it has been proven to work in LFR benchmarks, further research is needed to understand better the extension of the cover predictability.
 
 ## References
 - Ahn, YY., Bagrow, J. & Lehmann, S. Link communities reveal multiscale network complexity. Nature 466, 761–764 (2010). https://doi.org/10.1038/nature09182

@@ -398,7 +398,11 @@ void noeud_arbre::vite(const int &sp) {
     }
     if (!eq_true) {
       eq[0] = k;
-      eq[1] = nodes - ct - 1;
+      if (equivalence.size() > 0) {
+        eq[1] = equivalence[equivalence.size() - 1][1];
+      } else {
+        eq[1] = nodes;
+      }
       equivalence.push_back(eq);
     } else {
       eq_true = false;

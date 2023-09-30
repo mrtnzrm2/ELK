@@ -91,6 +91,7 @@ class Plot_H:
       y="D",
       ax=ax
     )
+    ax.set_ylabel(r"$\bar{\delta'}$")
     plt.legend([],[], frameon=False)
 
   def plotX(self, **kwargs):
@@ -105,7 +106,7 @@ class Plot_H:
     )
     plt.legend([],[], frameon=False)
 
-  def plotHL(self, width=8, height=6, **kwargs):
+  def plotSL(self, width=8, height=6, **kwargs):
     print("\t> Plot loop entropy as a function of K")
     # Create figure ----
     _, ax = plt.subplots(1, 1, figsize=(width, height))
@@ -116,7 +117,7 @@ class Plot_H:
       ax=ax
     )
     hbest = self.FH["height"].loc[self.FH["S"] == np.max(self.FH["S"])].to_numpy()[0]
-    ax.set_ylabel(r"$H_{L}$")
+    ax.set_ylabel(r"$S_{L}$")
     ax.text(0.1, 0.7, f"best: {hbest:.2f}", transform=ax.transAxes, size=15)
     plt.legend([],[], frameon=False)
 
@@ -608,8 +609,9 @@ class Plot_H:
       ax=ax, **kwargs
     )
 
-  def plot_network_combined(self, k, R, partition, nocs : dict, sizes : dict, ang=0, width=8, height=8, cmap_name="hls", font_size=10, undirected=False, **kwargs):
+  def plot_network_combined(self, k, R, partition, nocs : dict, sizes : dict, ang=0, spring=False, width=8, height=8, cmap_name="hls", font_size=10, undirected=False, **kwargs):
       from scipy.cluster import hierarchy
+      import matplotlib.patheffects as path_effects
       # Skim partition ----
       unique_clusters_id = np.unique(partition)
       keff = len(unique_clusters_id)
@@ -617,12 +619,12 @@ class Plot_H:
       if -1 in unique_clusters_id:
         save_colors = sns.color_palette(cmap_name, keff - 1)
         cmap_heatmap = [[]] * keff
-        cmap_heatmap[0] = [199/ 255.0, 0, 57/ 255.0]
+        cmap_heatmap[0] = [199 / 255.0, 0, 57 / 255.0]
         cmap_heatmap[1:] = save_colors
       else:
         save_colors = sns.color_palette(cmap_name, keff)
         cmap_heatmap = [[]] * (keff+1)
-        cmap_heatmap[0] = [199/ 255.0, 0, 57/ 255.0]
+        cmap_heatmap[0] = [199 / 255.0, 0, 57 / 255.0]
         cmap_heatmap[1:] = save_colors
       # Assign memberships to nodes ----
       if -1 in unique_clusters_id:
@@ -654,7 +656,7 @@ class Plot_H:
       # Get edges colors ----
       dA = self.dA.copy()
       if not undirected:
-        dA["id"] = hierarchy.cut_tree(self.H, k).reshape(-1)
+         dA["id"] = hierarchy.cut_tree(self.H, k).reshape(-1)
       else:
          dA["id"] = np.tile(hierarchy.cut_tree(self.H, k).reshape(-1), 2)
       minus_one_Dc(dA, undirected)
@@ -668,11 +670,17 @@ class Plot_H:
       for i, dat in enumerate(G.edges(data=True)):
         u, v, a = dat
         if "coords" not in kwargs.keys():
-          G[u][v]["kk_weight"] = - (a["weight"] - r_min) / (r_max - r_min) + r_max
+          if r_max - r_min > 0:
+            G[u][v]["kk_weight"] = - (a["weight"] - r_min) / (r_max - r_min) + r_max
+          else:
+            G[u][v]["kk_weight"] = a["weight"]
         if dA[u, v] == -1: edge_color[i] = cmap_heatmap[0]
         else: edge_color[i] = "gray"
       if "coords" not in kwargs.keys():
         pos = nx.kamada_kawai_layout(G, weight="kk_weight")
+        if spring:
+          Ginv = nx.DiGraph(R)
+          pos = nx.spring_layout(Ginv, weight="weight", pos=pos, iterations=5, seed=212)
       else:
         pos = kwargs["coords"]
       ang = ang * np.pi/ 180
@@ -681,18 +689,38 @@ class Plot_H:
       labs = {k : lab for k, lab in zip(G.nodes, self.labels)}
       plt.figure(figsize=(width, height))
       if "not_edges" not in kwargs.keys():
-        nx.draw_networkx_edges(G, pos=pos, edge_color=edge_color, alpha=0.2, arrowsize=20, connectionstyle="arc3,rad=-0.1")
+        nx.draw_networkx_edges(
+          G, pos=pos, edge_color=edge_color, alpha=0.5, arrowsize=10, connectionstyle="arc3,rad=-0.1",
+          node_size=1400
+        )
       if "modified_labels" not in kwargs.keys():
-        nx.draw_networkx_labels(G, pos=pos, labels=labs, font_size=font_size)
+        t = nx.draw_networkx_labels(G, pos=pos, labels=labs, font_color="white", font_size=font_size)
+        for key in t.keys():
+          t[key].set_path_effects(
+          [
+            path_effects.Stroke(linewidth=1, foreground='black'),
+            path_effects.Normal()
+          ]
+        )
       else:
-        nx.draw_networkx_labels(G, pos=pos, labels=kwargs["modified_labels"], font_size=font_size)
+        t = nx.draw_networkx_labels(G, pos=pos, labels=kwargs["modified_labels"], font_color="white")
+        for key in t.keys():
+          t[key].set_path_effects(
+          [
+            path_effects.Stroke(linewidth=1, foreground='black'),
+            path_effects.Normal()
+          ]
+        )
+
       for node in G.nodes:
         a = plt.pie(
           [s for s in nodes_memberships[node]["size"] if s != 0], # s.t. all wedges have equal size
-          center=pos[node], 
+          center=pos[node],  
           colors = [cmap_heatmap[i] for i, id in enumerate(nodes_memberships[node]["id"]) if id != 0],
-          radius=0.05
+          radius=0.08
         )
+        for i in range(len(a[0])):
+          a[0][i].set_alpha(0.8)
       array_pos = np.array([list(pos[v]) for v in pos.keys()])
       plt.xlim(-0.1 + np.min(array_pos, axis=0)[0], np.max(array_pos, axis=0)[0] + 0.1)
       plt.ylim(-0.1 + np.min(array_pos, axis=0)[1], np.max(array_pos, axis=0)[1] + 0.1)

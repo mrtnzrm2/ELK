@@ -220,16 +220,23 @@ class ELK(Sim):
 
     entropy.arbre(dist)
     max_level = entropy.get_max_level()
+
+    ento = entropy.get_entropy_h()[(self.leaves - max_level-1):]
+    ento_h = entropy.get_entropy_v()[(self.leaves - max_level-1):]
     self.link_entropy = np.array(
-      [entropy.get_entropy_h()[(self.leaves - max_level-1):], entropy.get_entropy_v()[(self.leaves - max_level-1):]]
+      [np.hstack([ento[1:], ento[0]]), np.hstack([ento_h[1:], ento_h[0]])]
     )
     total_entropy = np.sum(self.link_entropy)
     self.link_entropy = self.link_entropy / total_entropy
+
+    ento = entropy.get_entropy_h_H()[(self.leaves - max_level-1):]
+    ento_h = entropy.get_entropy_v_H()[(self.leaves - max_level-1):]
     self.link_entropy_H = np.array(
-      [entropy.get_entropy_h_H()[(self.leaves - max_level-1):], entropy.get_entropy_v_H()[(self.leaves - max_level-1):]]
+       [np.hstack([ento[1:], ento[0]]), np.hstack([ento_h[1:], ento_h[0]])]
     )
     total_entropy_H = np.sum(self.link_entropy_H)
     self.link_entropy_H = self.link_entropy_H / total_entropy_H
+
     sh = np.nansum(self.link_entropy[0, :])
     sv = np.nansum(self.link_entropy[1, :])
     print(f"\n\tlink entropy :  Sh : {sh:.4f}, and Sv : {sv:.4f}\n")
@@ -238,21 +245,26 @@ class ELK(Sim):
     print(f"\n\tlink entropy H: Sh : {sh:.4f}, and Sv : {sv:.4f}\n")
   
   def node_entropy_cpp(self, dist : str, cut=False):
-    # from scipy.cluster.hierarchy import cut_tree
-    # Run process_hclust_fast.cpp ----
     entropy = HE(self.Z, self.nodes)
     entropy.arbre(dist)
     max_level = entropy.get_max_level()
+
+    ento = entropy.get_entropy_h()[(self.nodes - max_level-1):]
+    ento_h = entropy.get_entropy_v()[(self.nodes - max_level-1):]
     self.node_entropy = np.array(
-      [entropy.get_entropy_h()[(self.nodes - max_level-1):], entropy.get_entropy_v()[(self.nodes - max_level-1):]]
+      [np.hstack([ento[1:], ento[0]]), np.hstack([ento_h[1:], ento_h[0]])]
     )
     total_entropy = np.sum(self.node_entropy)
     self.node_entropy = self.node_entropy / total_entropy
+
+    ento = entropy.get_entropy_h_H()[(self.nodes - max_level-1):]
+    ento_h = entropy.get_entropy_v_H()[(self.nodes - max_level-1):]
     self.node_entropy_H = np.array(
-      [entropy.get_entropy_h_H()[(self.nodes - max_level-1):], entropy.get_entropy_v_H()[(self.nodes - max_level-1):]]
+      [np.hstack([ento[1:], ento[0]]), np.hstack([ento_h[1:], ento_h[0]])]
     )
     total_entropy_H = np.sum(self.node_entropy_H)
     self.node_entropy_H = self.node_entropy_H / total_entropy_H
+    
     sh = np.nansum(self.node_entropy[0, :])
     sv = np.nansum(self.node_entropy[1, :])
     print(f"\n\tNode entropy :  Sh : {sh:.4f}, and Sv : {sv:.4f}\n")
@@ -326,40 +338,63 @@ class ELK(Sim):
   def set_colregion(self, colregion : colregion):
     self.colregion = colregion
 
-  def cover_assignment(self, Cr, labels, direction="source", **kwargs):  
-    from scipy.cluster.hierarchy import cut_tree, linkage
+  def get_nocs_information(self, Cr, dA, labels, direction, index):
+  
+    from scipy.cluster.hierarchy import linkage, cut_tree
     from scipy.spatial.distance import squareform
-    
-    cr = Cr.copy()
+
     nocs_size = {}
     nocs = {}
+    overlap = np.zeros(self.nodes)
 
-    if direction == "source":
-      D = 1 - self.source_sim_matrix
-    elif direction == "target":
-      D = 1 - self.target_sim_matrix
-    elif direction == "both":
-      a = 1 - self.source_sim_matrix
-      b = 1 - self.target_sim_matrix
-      keep = a != 0
-      x, y = np.where(keep)
-      D = np.zeros(a.shape)
-      D[x, y] = np.minimum(a[x, y], b[x, y])
-    else:
-      raise ValueError("No accepted direction")
+    if index == "S1_2":
+      if direction == "source":
+        np.seterr(divide='ignore', invalid='ignore')
+        Diss = (1 / self.source_sim_matrix) - 1
+        Diss[Diss == np.Inf] = np.max(Diss[Diss < np.Inf]) * 1.05
+      elif direction == "target":
+        np.seterr(divide='ignore', invalid='ignore')
+        Diss = (1 / self.target_sim_matrix) - 1
+        Diss[Diss == np.Inf] = np.max(Diss[Diss < np.Inf]) * 1.05
+      else:
+        raise ValueError("No accepted direction in discovery channel")
+    elif index == "H2":
+      if direction == "source":
+        Diss = np.sqrt(1 - self.source_sim_matrix)
+      elif direction == "target":
+        Diss = np.sqrt(1 - self.target_sim_matrix)
+      else:
+        raise ValueError("No accepted direction in discovery channel")
+    else: raise ValueError("No accepeted index in discovery channel")
 
+    th = np.max(Diss) * 1.05
+    
     ## Single nodes ----
     single_nodes = np.where(Cr == -1)[0]
     ## Nodes with single community membership ----
-    NSC = [(np.where(cr == i)[0], i) for i in np.unique(cr) if i != -1]
+    NSC = [(set(np.where(Cr == i)[0]), i) for i in np.unique(Cr) if i != -1]
+
     for sn in single_nodes:
-      Dsn = np.zeros((len(NSC)+1))
+      if direction == "source":
+        dsn = set(dA.loc[dA.source == sn].target)
+      elif direction == "target":
+        dsn = set(dA.loc[dA.target == sn].source)
+      else:
+        dsn1 = set(dA.loc[dA.target == sn].source)
+        dsn2 = set(dA.loc[dA.source == sn].target)
+        dsn = dsn1.intersection(dsn2)
+
+      Dsn = np.zeros((len(NSC)))
 
       for ii, nsc in enumerate(NSC):
-        Dsn[ii] = np.mean(D[sn, nsc[0]])
+        neighbor_nodes = list(dsn.intersection(nsc[0]))
 
-      Dsn[-1] = 1
-      non_trivial_covers = Dsn < 1
+        if len(neighbor_nodes) > 0:
+          Dsn[ii] = np.mean(Diss[sn, neighbor_nodes])
+        else:
+          Dsn[ii] = th
+
+      non_trivial_covers = Dsn < th
 
       if np.sum(non_trivial_covers) > 0:
 
@@ -371,7 +406,7 @@ class ELK(Sim):
           DD = np.zeros((nn, nn))
           for kk in np.arange(nn):
             for ki in np.arange(kk+1, nn):
-              DD[kk, ki] = np.abs((Dsn[non_trivial_covers][kk] - Dsn[non_trivial_covers][ki]))
+              DD[kk, ki] = np.abs(Dsn[non_trivial_covers][kk] - Dsn[non_trivial_covers][ki])
               DD[ki, kk] = DD[kk, ki]
 
           DD = linkage(squareform(DD), method="complete")
@@ -383,23 +418,64 @@ class ELK(Sim):
           li = [0]
           min_point_region =  0
 
-        # x=pd.DataFrame({"x" : Dsn[non_trivial_covers], "y": [0] * Dsn[non_trivial_covers].shape[0], "label": li})
-        # x["label"] = pd.Categorical(x["label"], np.unique(li))
-        # sns.scatterplot(data=x, x="x", y="y", hue="label",  s=100)
-        # plt.title(labels[sn])
-        # plt.show()
-
         ii = 0
         for nsc, non in zip(NSC, non_trivial_covers):
           if non:
             if li[ii] == min_point_region or Dsn[non_trivial_covers][ii] == dsn_min:
               if labels[sn] not in nocs.keys():
                 nocs[labels[sn]] = [nsc[1]]
-                nocs_size[labels[sn]] = {nsc[1] : 1 - Dsn[non_trivial_covers][ii]}
+                nocs_size[labels[sn]] = {nsc[1] : th - Dsn[non_trivial_covers][ii]}
+
               else:
                 nocs[labels[sn]].append(nsc[1])
-                nocs_size[labels[sn]].update({nsc[1] : 1 - Dsn[non_trivial_covers][ii]})
+                nocs_size[labels[sn]].update({nsc[1] : th - Dsn[non_trivial_covers][ii]})
+              overlap[sn] += 1
             ii += 1
+
+    return  np.array(list(nocs.keys())), nocs, nocs_size
+
+  def cover_assignment(self, Cr, K, labels, undirected=False, direction="source", index="H2", **kwargs):  
+    from scipy.cluster.hierarchy import cut_tree
+    cr = Cr.copy()
+
+    dA = self.dA.copy()
+    ## Cut tree ----
+    if not undirected:
+      dA["id"] = cut_tree(self.H, n_clusters=K).ravel()
+    else:
+      dA["id"] = np.tile(cut_tree(self.H, n_clusters=K).ravel(), 2)
+
+    if direction == "source":
+      overlap, nocs, nocs_size = self.get_nocs_information(Cr, dA, labels, "source", index)
+    elif direction == "target":
+      overlap, nocs, nocs_size = self.get_nocs_information(Cr,dA, labels, "target", index)
+    elif direction == "both":
+      overlap_src, nocs_src, nocs_size_src = self.get_nocs_information(Cr, dA, labels, "source", index)
+      overlap_tgt, nocs_tgt, nocs_size_tgt = self.get_nocs_information(Cr, dA, labels, "target", index)
+
+      overlap = np.hstack([overlap_src, overlap_tgt])
+      overlap = np.unique(overlap)
+
+      nocs = nocs_src.copy()
+
+      for key, value in nocs_tgt.items():
+        if key not in nocs.keys():
+          nocs[key] = value
+        else:
+          nocs[key] += value
+          nocs[key] = list(set(nocs[key]))
+
+      nocs_size = nocs_size_src.copy()
+
+      for key, value in nocs_size_tgt.items():
+        if key not in nocs_size.keys():
+          nocs_size[key] = value
+        else:
+          for key2, value2 in nocs_size_tgt[key].items():
+            if key2 not in nocs_size[key].keys():
+              nocs_size[key].update({key2 : value2})
+            else:
+              nocs_size[key][key2] = 0.5 * (value2 + nocs_size[key][key2])
 
     not_nocs = []
 
@@ -414,9 +490,11 @@ class ELK(Sim):
       del nocs[key]
       del nocs_size[key]
 
-    return  np.array(list(nocs.keys())), nocs, nocs_size, cr
+    return np.array(list(nocs.keys())), nocs, nocs_size, cr
     
-  def discovery(self, Cr, undirected=False, **kwargs):
+  def discovery(self, Cr, K, undirected=False, direction="both", index='H2', **kwargs):
     labels = self.colregion.labels[:self.nodes]
-    overlap, noc_covers, noc_sizes, new_partition = self.cover_assignment(Cr, labels, undirected=undirected, **kwargs)
+    overlap, noc_covers, noc_sizes, new_partition = self.cover_assignment(
+      Cr, K, labels, undirected=undirected, direction=direction, index=index, **kwargs
+    )
     return overlap, noc_covers, noc_sizes, new_partition

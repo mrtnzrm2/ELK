@@ -21,9 +21,9 @@ We made an algorithm that projects the link merging process to a node merging pr
 
 **Computing similarities using different topologies**: You can choose to find node communities for how similar their source or/and target connections are. In directed networks, nodes can have different functions from the perspective of acting or receiving the action of other nodes. Our algorithm can produce partitions considering the direction of interest, making them easier to interpret.
 
-**Novel quality function for link communities: The loop entropy ($H_{L}$)**: As it is well known, the concept of a community can have multiple interpretations; however, it is well accepted that the communities tend to be formed by the set of nodes with more connections between them than with the rest of the network. But what happens when the network is so dense that modularity, i.e., the density of a cluster compared to a random network, stops being a good quality function to detect the best partition?
+**Novel quality function for link communities: The loop entropy ($S_{L}$)**: As it is well known, the concept of a community can have multiple interpretations; however, it is well accepted that the communities tend to be formed by the set of nodes with more connections between them than with the rest of the network. But what happens when the network is so dense that modularity, i.e., the density of a cluster compared to a random network, stops being a good quality function to detect the best partition?
 
-To solve that problem, we introduce the loop entropy, $H_{L}$, which measures the quality of a link partition for the amount of helpful link community information. In information theory, entropy measures the expected information of a random variable. In this case, the random variable is the distribution of effective links in a link community in the network. The number of effective links in a link community is the number of excess links with respect to a tree version of that link community.
+To solve that problem, we introduce the loop entropy, $S_{L}$, which measures the quality of a link partition for the amount of helpful link community information. In information theory, entropy measures the expected information of a random variable. In this case, the random variable is the distribution of effective links in a link community in the network. The number of effective links in a link community is the number of excess links with respect to a tree version of that link community.
 
 In a tree network with $n$ nodes, there are $m=n-1$ links. Then, the number of effective links in a link community $c$ is
 
@@ -39,7 +39,7 @@ $q = 1 - \frac{\sum_{c} m_{f}^{c}}{M-N+1}$.
 
 Then, the loop entropy of the link partition is
 
-$H_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$.
+$S_{L} = -\sum_{c}p_{c}\log(p_{c}) -q\log(q)$.
 
 By selecting the link partition with the highest loop entropy, we choose the state of the link partition with the most information, which, at the same time, is the state between the domination of small tree-like link communities and complex loop-like link communities.
  
